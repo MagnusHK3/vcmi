@@ -290,14 +290,35 @@ void AdventureMapPopup::mouseDraggedPopup(const Point & cursorPosition, const Po
 CInfoBoxPopup::CInfoBoxPopup(Point position, const CGTownInstance * town)
 	: AdventureMapPopup(RCLICK_POPUP | PLAYER_COLORED, ImagePath::builtin("TOWNQVBK"), position)
 {
-	InfoAboutTown iah;
-	GAME->interface()->cb->getTownInfo(town, iah, GAME->interface()->localState->getCurrentArmy()); //todo: should this be nearest hero?
-
 	OBJECT_CONSTRUCTION;
-	tooltip = std::make_shared<CTownTooltip>(Point(9, 10), iah);
 
 	if(settings["general"]["enableUiEnhancements"].Bool())
+	{
 		background->setPlayerColor(town->getOwner());
+
+		// Extend popup height if recruitment info is shown (own town with dwellings)
+		// Must be created before tooltip so icons render on top of extension background
+		if(town->getOwner() == GAME->interface()->playerID)
+		{
+			bool hasDwellings = false;
+			for(size_t i = 0; i < town->creatures.size(); ++i)
+			{
+				if(!town->creatures[i].second.empty())
+				{
+					hasDwellings = true;
+					break;
+				}
+			}
+
+			if(hasDwellings)
+			{
+				backgroundExtension = std::make_shared<CFilledTexture>(ImagePath::builtin("DiBoxBck"), Rect(0, pos.h, pos.w, 68));
+				pos.h += 68;
+			}
+		}
+	}
+
+	tooltip = std::make_shared<CTownTooltip>(Point(9, 10), town);
 
 	addUsedEvents(DRAG_POPUP);
 

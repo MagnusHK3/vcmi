@@ -108,6 +108,7 @@ public:
 class CInfoBoxPopup : public AdventureMapPopup
 {
 	std::shared_ptr<CIntObject> tooltip;
+	std::shared_ptr<CIntObject> backgroundExtension;
 
 public:
 	CInfoBoxPopup(Point position, const CGTownInstance * town);

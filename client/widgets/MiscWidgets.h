@@ -129,7 +129,12 @@ class CTownTooltip : public CArmyTooltip
 	std::shared_ptr<CAnimImage> res1;
 	std::shared_ptr<CAnimImage> res2;
 
+	std::shared_ptr<CLabel> recruitLabel;
+	std::vector<std::shared_ptr<CAnimImage>> recruitIcons;
+	std::vector<std::shared_ptr<CLabel>> recruitCounts;
+
 	void init(const InfoAboutTown & town);
+	void initRecruitmentInfo(const CGTownInstance * town);
 public:
 	CTownTooltip(Point pos, const InfoAboutTown & town);
 	CTownTooltip(Point pos, const CGTownInstance * town);

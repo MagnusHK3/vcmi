@@ -35,6 +35,7 @@
 #include "../../lib/callback/CCallback.h"
 #include "../../lib/entities/faction/CTownHandler.h"
 #include "../../lib/gameState/InfoAboutArmy.h"
+#include "../../lib/CCreatureHandler.h"
 #include "../../lib/mapObjects/CGCreature.h"
 #include "../../lib/mapObjects/CGHeroInstance.h"
 #include "../../lib/mapObjects/CGTownInstance.h"
@@ -463,6 +464,57 @@ CTownTooltip::CTownTooltip(Point pos, const CGTownInstance * town)
 	: CArmyTooltip(pos, InfoAboutTown(town, true))
 {
 	init(InfoAboutTown(town, true));
+	initRecruitmentInfo(town);
+}
+
+void CTownTooltip::initRecruitmentInfo(const CGTownInstance * town)
+{
+	if(!settings["general"]["enableUiEnhancements"].Bool())
+		return;
+
+	if(town->getOwner() != GAME->interface()->playerID)
+		return;
+
+	// Check if any dwellings exist
+	bool hasDwellings = false;
+	for(size_t i = 0; i < town->creatures.size(); ++i)
+	{
+		if(!town->creatures[i].second.empty())
+		{
+			hasDwellings = true;
+			break;
+		}
+	}
+
+	if(!hasDwellings)
+		return;
+
+	OBJECT_CONSTRUCTION;
+
+	int iconX = 14;
+	static const int iconY = 190;
+
+	recruitLabel = std::make_shared<CLabel>(iconX, iconY - 10, FONT_TINY, ETextAlignment::TOPLEFT, Colors::WHITE, "Available Units:");
+	static const int iconSpacing = 36;
+
+	for(size_t i = 0; i < town->creatures.size() && i < 7; ++i)
+	{
+		if(town->creatures[i].second.empty())
+			continue;
+
+		CreatureID creatureId = town->creatures[i].second.back();
+		int iconIndex = creatureId.toCreature()->getIconIndex();
+
+		recruitIcons.push_back(std::make_shared<CAnimImage>(AnimationPath::builtin("CPRSMALL"), iconIndex, 0, iconX, iconY));
+
+		ui32 available = town->creatures[i].first;
+		std::string countText = available > 0 ? std::to_string(available) : "-";
+		const ColorRGBA countColor = available > 0 ? Colors::WHITE : ColorRGBA(128, 128, 128, ColorRGBA::ALPHA_OPAQUE);
+
+		recruitCounts.push_back(std::make_shared<CLabel>(iconX + 17, iconY + 39, FONT_TINY, ETextAlignment::CENTER, countColor, countText));
+
+		iconX += iconSpacing;
+	}
 }
 
 CInteractableTownTooltip::CInteractableTownTooltip(Point pos, const CGTownInstance * town)
