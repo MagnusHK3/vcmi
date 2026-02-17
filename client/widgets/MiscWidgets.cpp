@@ -475,45 +475,55 @@ void CTownTooltip::initRecruitmentInfo(const CGTownInstance * town)
 	if(town->getOwner() != GAME->interface()->playerID)
 		return;
 
-	// Check if any dwellings exist
-	bool hasDwellings = false;
-	for(size_t i = 0; i < town->creatures.size(); ++i)
+	// Count dwellings with available creatures
+	int activeCount = 0;
+	for(size_t i = 0; i < town->creatures.size() && i < 7; ++i)
 	{
-		if(!town->creatures[i].second.empty())
-		{
-			hasDwellings = true;
-			break;
-		}
+		if(!town->creatures[i].second.empty() && town->creatures[i].first > 0)
+			activeCount++;
 	}
 
-	if(!hasDwellings)
+	if(activeCount == 0)
 		return;
 
 	OBJECT_CONSTRUCTION;
 
-	int iconX = 14;
-	static const int iconY = 190;
+	static const int startX = 5;
+	static const int iconSpacing = 42;
+	static const int labelY = 174;
+	static const int firstRowY = 190;
+	static const int secondRowY = 238;
+	static const int maxPerRow = 4;
+	static const ColorRGBA goldBorder(241, 216, 120, 255);
 
-	recruitLabel = std::make_shared<CLabel>(iconX, iconY - 10, FONT_TINY, ETextAlignment::TOPLEFT, Colors::WHITE, "Available Units:");
-	static const int iconSpacing = 36;
+	// Horizontal separator line between garrison and recruitment sections
+	recruitSeparator = std::make_shared<SimpleLine>(Point(0, 166), Point(180, 166), goldBorder);
 
+	recruitLabel = std::make_shared<CLabel>(startX, labelY, FONT_TINY, ETextAlignment::TOPLEFT, Colors::WHITE, "Available Units:");
+
+	int placed = 0;
 	for(size_t i = 0; i < town->creatures.size() && i < 7; ++i)
 	{
 		if(town->creatures[i].second.empty())
 			continue;
+
+		ui32 available = town->creatures[i].first;
+		if(available == 0)
+			continue;
+
+		int row = placed / maxPerRow;
+		int col = placed % maxPerRow;
+		int iconX = startX + col * iconSpacing;
+		int iconY = row == 0 ? firstRowY : secondRowY;
 
 		CreatureID creatureId = town->creatures[i].second.back();
 		int iconIndex = creatureId.toCreature()->getIconIndex();
 
 		recruitIcons.push_back(std::make_shared<CAnimImage>(AnimationPath::builtin("CPRSMALL"), iconIndex, 0, iconX, iconY));
 
-		ui32 available = town->creatures[i].first;
-		std::string countText = available > 0 ? std::to_string(available) : "-";
-		const ColorRGBA countColor = available > 0 ? Colors::WHITE : ColorRGBA(128, 128, 128, ColorRGBA::ALPHA_OPAQUE);
+		recruitCounts.push_back(std::make_shared<CLabel>(iconX + 17, iconY + 39, FONT_TINY, ETextAlignment::CENTER, Colors::WHITE, std::to_string(available)));
 
-		recruitCounts.push_back(std::make_shared<CLabel>(iconX + 17, iconY + 39, FONT_TINY, ETextAlignment::CENTER, countColor, countText));
-
-		iconX += iconSpacing;
+		placed++;
 	}
 }
 

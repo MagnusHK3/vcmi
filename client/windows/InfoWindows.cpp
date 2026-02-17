@@ -300,20 +300,21 @@ CInfoBoxPopup::CInfoBoxPopup(Point position, const CGTownInstance * town)
 		// Must be created before tooltip so icons render on top of extension background
 		if(town->getOwner() == GAME->interface()->playerID)
 		{
-			bool hasDwellings = false;
-			for(size_t i = 0; i < town->creatures.size(); ++i)
+			int availableCount = 0;
+			for(size_t i = 0; i < town->creatures.size() && i < 7; ++i)
 			{
-				if(!town->creatures[i].second.empty())
-				{
-					hasDwellings = true;
-					break;
-				}
+				if(!town->creatures[i].second.empty() && town->creatures[i].first > 0)
+					availableCount++;
 			}
 
-			if(hasDwellings)
+			if(availableCount > 0)
 			{
-				backgroundExtension = std::make_shared<CFilledTexture>(ImagePath::builtin("DiBoxBck"), Rect(0, pos.h, pos.w, 68));
-				pos.h += 68;
+				static const int singleRowHeight = 72;
+				static const int doubleRowHeight = 120;
+				int extensionHeight = availableCount > 4 ? doubleRowHeight : singleRowHeight;
+				backgroundExtension = std::make_shared<CFilledTexture>(ImagePath::builtin("DiBoxBck"), Rect(0, pos.h, pos.w, extensionHeight));
+				pos.h += extensionHeight;
+				hasExtendedBorder = true;
 			}
 		}
 	}
@@ -376,6 +377,20 @@ CInfoBoxPopup::CInfoBoxPopup(Point position, const CGCreature * creature)
 	addUsedEvents(DRAG_POPUP);
 
 	fitToScreen(10);
+}
+
+void CInfoBoxPopup::showAll(Canvas & to)
+{
+	CIntObject::showAll(to);
+	if(hasExtendedBorder)
+	{
+		auto color = GAME->interface() ? GAME->interface()->playerID : PlayerColor(1);
+		if(settings["session"]["spectate"].Bool())
+			color = PlayerColor(1);
+		// Draw border at pos edges to overlap TOWNQVBK's baked-in border
+		// and extend it around the full popup including the extension area
+		CMessage::drawBorder(color, to, pos.w, pos.h, pos.x, pos.y);
+	}
 }
 
 MinimapWithIcons::MinimapWithIcons(const Point & position)

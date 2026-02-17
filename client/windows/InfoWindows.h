@@ -109,12 +109,15 @@ class CInfoBoxPopup : public AdventureMapPopup
 {
 	std::shared_ptr<CIntObject> tooltip;
 	std::shared_ptr<CIntObject> backgroundExtension;
+	bool hasExtendedBorder = false;
 
 public:
 	CInfoBoxPopup(Point position, const CGTownInstance * town);
 	CInfoBoxPopup(Point position, const CGHeroInstance * hero);
 	CInfoBoxPopup(Point position, const CGGarrison * garr);
 	CInfoBoxPopup(Point position, const CGCreature * creature);
+
+	void showAll(Canvas & to) override;
 };
 
 /// component selection window

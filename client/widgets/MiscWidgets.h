@@ -33,6 +33,7 @@ class CCreatureAnim;
 class CComponent;
 class CAnimImage;
 class LRClickableArea;
+class SimpleLine;
 class TransparentFilledRectangle;
 
 /// Shows a text by moving the mouse cursor over the object
@@ -129,6 +130,7 @@ class CTownTooltip : public CArmyTooltip
 	std::shared_ptr<CAnimImage> res1;
 	std::shared_ptr<CAnimImage> res2;
 
+	std::shared_ptr<SimpleLine> recruitSeparator;
 	std::shared_ptr<CLabel> recruitLabel;
 	std::vector<std::shared_ptr<CAnimImage>> recruitIcons;
 	std::vector<std::shared_ptr<CLabel>> recruitCounts;
